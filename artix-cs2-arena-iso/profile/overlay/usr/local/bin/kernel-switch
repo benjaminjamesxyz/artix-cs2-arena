@@ -1,0 +1,85 @@
+#!/bin/bash
+# kernel-switch — switch default kernel for next boot
+# Usage: kernel-switch zen|cachyos|status
+# Both linux-zen and linux-cachyos-bore must be installed
+
+set -euo pipefail
+
+if [ "$(id -u)" -ne 0 ]; then
+    echo "Run with sudo: sudo kernel-switch {zen|cachyos|status}"
+    exit 1
+fi
+
+usage() {
+    echo "Usage: kernel-switch {zen|cachyos|status}"
+    echo ""
+    echo "  zen      — Switch to linux-zen (PREEMPT scheduler)"
+    echo "  cachyos  — Switch to linux-cachyos-bore (BORE scheduler)"
+    echo "  status   — Show current and saved kernel"
+    echo ""
+    echo "Both kernels are always installed. This selects which one"
+    echo "boots by default. You can also pick at the GRUB menu."
+}
+
+case "${1:-}" in
+    zen)
+        # Find the GRUB menu entry index for linux-zen
+        ENTRY=$(grep -n "with Linux linux-zen" /boot/grub/grub.cfg 2>/dev/null | head -1 | cut -d: -f1 || true)
+        if [ -z "$ENTRY" ]; then
+            echo "ERROR: linux-zen entry not found in GRUB config."
+            echo "Run: sudo grub-mkconfig -o /boot/grub/grub.cfg"
+            exit 1
+        fi
+        # GRUB menu entries are 0-indexed, offset by header entries
+        # Default kernel is typically the first entry (index 0)
+        grub-editenv /boot/grub/grubenv set saved=0 2>/dev/null || true
+        # Update default in /etc/default/grub
+        sed -i 's/^GRUB_DEFAULT=.*/GRUB_DEFAULT=0/' /etc/default/grub
+        grub-mkconfig -o /boot/grub/grub.cfg
+        echo "Default kernel set to: linux-zen (PREEMPT)"
+        echo "Reboot to apply."
+        ;;
+
+    cachyos)
+        # Find the GRUB menu entry index for linux-cachyos-bore
+        ENTRY=$(grep -n "with Linux linux-cachyos" /boot/grub/grub.cfg 2>/dev/null | head -1 | cut -d: -f1 || true)
+        if [ -z "$ENTRY" ]; then
+            echo "ERROR: linux-cachyos-bore not found in GRUB config."
+            echo "Make sure it's installed: pacman -S linux-cachyos-bore"
+            exit 1
+        fi
+        # CachyOS kernel is typically the second entry (index 1)
+        grub-editenv /boot/grub/grubenv set saved=1 2>/dev/null || true
+        sed -i 's/^GRUB_DEFAULT=.*/GRUB_DEFAULT=1/' /etc/default/grub
+        grub-mkconfig -o /boot/grub/grub.cfg
+        echo "Default kernel set to: linux-cachyos-bore (BORE scheduler)"
+        echo "Reboot to apply."
+        ;;
+
+    status)
+        echo "=== Kernel Status ==="
+        echo "  Running:    $(uname -r)"
+        echo "  Installed:  $(ls /usr/lib/modules/ 2>/dev/null | tr '\n' ' ')"
+        if [ -f /etc/default/grub ]; then
+            echo "  GRUB default: $(grep '^GRUB_DEFAULT=' /etc/default/grub | cut -d= -f2)"
+        fi
+        echo ""
+
+        # Check if both kernels are installed
+        if ls /usr/lib/modules/*zen* &>/dev/null; then
+            echo "  linux-zen: installed"
+        else
+            echo "  linux-zen: NOT INSTALLED"
+        fi
+        if ls /usr/lib/modules/*cachyos* &>/dev/null; then
+            echo "  linux-cachyos-bore: installed"
+        else
+            echo "  linux-cachyos-bore: NOT INSTALLED (install: pacman -S linux-cachyos-bore)"
+        fi
+        ;;
+
+    *)
+        usage
+        exit 1
+        ;;
+esac

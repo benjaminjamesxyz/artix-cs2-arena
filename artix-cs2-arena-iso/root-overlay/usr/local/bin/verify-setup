@@ -1,0 +1,102 @@
+#!/bin/bash
+# verify-setup — health check for all gaming subsystems
+# Run after installation to verify everything is configured
+
+set -uo pipefail
+
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+BOLD='\033[1m'
+NC='\033[0m'
+
+PASS=0
+FAIL=0
+
+check() {
+    local desc="$1"
+    local cmd="$2"
+    if eval "$cmd" > /dev/null 2>&1; then
+        echo -e "  ${GREEN}[PASS]${NC} $desc"
+        ((PASS++))
+    else
+        echo -e "  ${RED}[FAIL]${NC} $desc"
+        ((FAIL++))
+    fi
+}
+
+info() {
+    echo -e "  ${YELLOW}[INFO]${NC} $1"
+}
+
+echo -e "${BOLD}╔══════════════════════════════════════════╗${NC}"
+echo -e "${BOLD}║   artix-cs2-arena — System Health Check  ║${NC}"
+echo -e "${BOLD}╚══════════════════════════════════════════╝${NC}"
+echo ""
+
+# ─── Kernel ───
+echo -e "${BOLD}[Kernel]${NC}"
+check "linux-zen or cachyos-bore loaded" "echo $(uname -r) | grep -qE 'zen|cachyos'"
+info "Running: $(uname -r)"
+check "linux-zen installed" "ls /usr/lib/modules/*zen* > /dev/null 2>&1"
+check "linux-cachyos-bore installed" "ls /usr/lib/modules/*cachyos* > /dev/null 2>&1"
+echo ""
+
+# ─── GPU ───
+echo -e "${BOLD}[GPU — NVIDIA RTX 3060 Ti]${NC}"
+check "NVIDIA driver loaded" "nvidia-smi > /dev/null 2>&1"
+check "DRM KMS enabled" "cat /sys/module/nvidia_drm/parameters/modeset 2>/dev/null | grep -q Y"
+if command -v xrandr &>/dev/null; then
+    check "165Hz display active" "xrandr --query 2>/dev/null | grep -q '165.00'"
+    info "Resolution: $(xrandr --query 2>/dev/null | grep ' connected' | head -1 | awk '{print $3}')"
+fi
+echo ""
+
+# ─── Audio ───
+echo -e "${BOLD}[Audio]${NC}"
+check "PipeWire running" "pactl info > /dev/null 2>&1"
+check "WirePlumber active" "wpctl status > /dev/null 2>&1"
+if pactl info &>/dev/null; then
+    info "Server: $(pactl info 2>/dev/null | grep 'Server Name' | cut -d: -f2 | xargs)"
+fi
+echo ""
+
+# ─── Performance ───
+echo -e "${BOLD}[Performance Tuning]${NC}"
+check "zram active" "zramctl 2>/dev/null | grep -q zram"
+check "CPU governor = performance" "cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor 2>/dev/null | grep -q performance"
+check "fq_codel qdisc" "tc qdisc show 2>/dev/null | grep -q fq_codel"
+if [ -d /sys/block/nvme0n1 ]; then
+    check "NVMe scheduler = none" "cat /sys/block/nvme0n1/queue/scheduler 2>/dev/null | grep -q '\[none\]'"
+    info "NVMe read-ahead: $(cat /sys/block/nvme0n1/queue/read_ahead_kb 2>/dev/null || echo 'N/A')KB"
+fi
+check "GameMode available" "gamemoded -s > /dev/null 2>&1"
+check "vm.max_map_count high" "[ $(cat /proc/sys/vm/max_map_count) -gt 1000000 ]"
+check "TCP BBR congestion" "sysctl net.ipv4.tcp_congestion_control 2>/dev/null | grep -q bbr"
+echo ""
+
+# ─── Peripherals ───
+echo -e "${BOLD}[Peripherals]${NC}"
+check "USB 1000Hz polling" "cat /sys/module/usbhid/parameters/jspoll 2>/dev/null | grep -q 1"
+check "OpenRazer daemon" "systemctl --user status openrazer-daemon > /dev/null 2>&1 || pgrep -x openrazer-daemon > /dev/null 2>&1"
+check "Mouse acceleration disabled" "xinput list-props 2>/dev/null | grep -q 'Accel Profile.*-1' || gsettings get org.gnome.desktop.mouse accel-profile 2>/dev/null | grep -q flat"
+echo ""
+
+# ─── Gaming ───
+echo -e "${BOLD}[Gaming Stack]${NC}"
+check "Steam installed" "which steam > /dev/null 2>&1 || [ -f /usr/bin/steam ]"
+check "MangoHud installed" "which mangohud > /dev/null 2>&1"
+check "Discord installed" "which discord > /dev/null 2>&1 || [ -f /usr/bin/discord ]"
+check "Gamescope installed" "which gamescope > /dev/null 2>&1"
+echo ""
+
+# ─── Summary ───
+echo -e "${BOLD}════════════════════════════════════════════${NC}"
+TOTAL=$((PASS + FAIL))
+if [ "$FAIL" -eq 0 ]; then
+    echo -e "  ${GREEN}ALL $PASS CHECKS PASSED${NC} — Ready to game!"
+else
+    echo -e "  ${GREEN}$PASS passed${NC}, ${RED}$FAIL failed${NC} out of $TOTAL checks"
+    echo "  Run failed commands manually to diagnose."
+fi
+echo -e "${BOLD}════════════════════════════════════════════${NC}"

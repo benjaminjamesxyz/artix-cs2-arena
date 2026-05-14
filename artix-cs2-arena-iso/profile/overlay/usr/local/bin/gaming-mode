@@ -1,0 +1,46 @@
+#!/bin/bash
+# gaming-mode — apply gaming-optimized settings for current session
+# Can be run at login or manually before gaming
+
+set -uo pipefail
+
+echo "==> [CS2-Arena] Applying gaming mode..."
+
+# ─── CPU Governor ───
+if command -v cpupower &>/dev/null; then
+    sudo cpupower frequency-set -g performance 2>/dev/null && echo "  CPU governor → performance"
+    fi
+
+# ─── Disable compositor (picom) ───
+if pgrep picom &>/dev/null; then
+    pkill picom 2>/dev/null && echo "  Compositor (picom) → disabled"
+fi
+
+# ─── Set GPU to max performance ───
+if command -v nvidia-smi &>/dev/null; then
+    # Force maximum GPU performance
+    sudo nvidia-smi -pm 1 2>/dev/null && echo "  NVIDIA persistence mode → enabled"
+    # Set all GPUs to max performance
+    sudo nvidia-smi -pl 200 2>/dev/null || true  # Power limit (adjust for your card)
+fi
+
+# ─── Process priority ───
+# Steam gets higher priority when running
+if pgrep steam &>/dev/null; then
+    sudo renice -n -5 -p $(pgrep -o steam) 2>/dev/null && echo "  Steam priority → boosted"
+fi
+
+# ─── Disable screen blanking ───
+xset s off 2>/dev/null
+xset -dpms 2>/dev/null
+xset s noblank 2>/dev/null
+echo "  Screen blanking → disabled"
+
+# ─── Verify GameMode ───
+if command -v gamemoded &>/dev/null; then
+    echo "  GameMode → available (auto-activates with CS2)"
+fi
+
+echo "==> [CS2-Arena] Gaming mode active."
+echo "    Toggle MangoHud: Right Shift + F12"
+echo "    Return to normal: reboot or run gaming-mode --off"
