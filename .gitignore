@@ -1,0 +1,13 @@
+# AI tool files
+AGENTS.md
+.sisyphus/
+.opencode/
+
+# Build output
+artix-cs2-arena-iso/output/
+
+# OS files
+.DS_Store
+*.swp
+*.swo
+*~
