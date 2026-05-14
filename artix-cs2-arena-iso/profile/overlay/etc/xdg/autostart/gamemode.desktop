@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=GameMode Session Setup
+Comment=Apply gaming-optimized settings for this session
+Exec=/usr/local/bin/gaming-mode
+Terminal=false
+Hidden=false
+X-GNOME-Autostart-enabled=true

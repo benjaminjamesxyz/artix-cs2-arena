@@ -1,0 +1,27 @@
+# ═══════════════════════════════════════════════════
+# System-wide environment variables — artix-cs2-arena
+# ═══════════════════════════════════════════════════
+
+# NVIDIA GBM backend
+GBM_BACKEND=nvidia-drm
+__GLX_VENDOR_LIBRARY_NAME=nvidia
+
+# Vulkan ICD loader
+VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/nvidia_icd.json
+
+# MangoHud default config
+MANGOHUD_CONFIGFILE=/etc/mangohud.conf
+
+# GameMode default on
+LD_PRELOAD=/usr/lib/libgamemode.so:/usr/lib/libgamemodeauto.so
+
+# Proton compatibility
+PROTON_LOG=0
+STEAM_COMPAT_DATA_PATH=~/.steam/root/compatdata
+
+# Firefox acceleration (uses Wayland/GL)
+MOZ_ENABLE_WAYLAND=1
+MOZ_DISABLE_RDD_SANDBOX=1
+
+# Qt platform
+QT_QPA_PLATFORM=xcb
