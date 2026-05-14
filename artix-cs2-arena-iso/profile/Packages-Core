@@ -1,0 +1,40 @@
+# ─── Base System ───
+base
+base-devel
+linux-zen
+linux-zen-headers
+linux-firmware
+grub
+efibootmgr
+os-prober
+
+# ─── Init System ───
+runit
+runit-service
+runit-rc
+
+# ─── Filesystem Tools ───
+bash
+btrfs-progs
+xfsprogs
+dosfstools
+ntfs-3g
+f2fs-tools
+
+# ─── Essential ───
+openssh
+haveged
+sudo
+which
+nano
+vim
+
+# ─── Network ───
+connman
+wpa_supplicant
+dhclient
+
+# ─── AUR Support ───
+git
+curl
+wget

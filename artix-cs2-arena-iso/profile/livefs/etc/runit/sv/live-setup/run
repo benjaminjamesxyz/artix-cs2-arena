@@ -1,0 +1,16 @@
+#!/bin/sh
+# Live environment setup service
+# Runs on first boot of the ISO
+
+exec 2>&1
+
+echo "[live] artix-cs2-arena live environment starting..."
+
+# Start NetworkManager or connman
+sv start connman 2>/dev/null || true
+
+# Start D-Bus
+sv start dbus 2>/dev/null || true
+
+echo "[live] Live environment ready."
+echo "[live] Launch Calamares from the desktop or run: sudo calamares"

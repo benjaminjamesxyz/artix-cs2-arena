@@ -1,0 +1,16 @@
+# ─── Live Environment Packages (ISO only, not installed) ───
+calamares
+calamares-artix-config
+artix-live-portable
+xorg-server
+xorg-xinit
+i3-wm
+i3status
+lightdm
+lightdm-gtk-greeter
+connman
+dhclient
+dhcpcd
+firefox
+alacritty
+mousepad

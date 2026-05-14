@@ -1,0 +1,116 @@
+---
+# ═══════════════════════════════════════════════════
+# artix-cs2-arena — Artix Linux CS2 Gaming Distro
+# artools profile.yaml (artools 0.38.5+)
+# Hardware: Ryzen 7 5700G / RTX 3060 Ti / 32GB DDR4
+# ═══════════════════════════════════════════════════
+
+live-session:
+  user: artix
+  password: artix
+  autologin: true
+  use-xlibre: false
+  services:
+    - connmand
+    - lightdm
+    - cpupower
+  user-services:
+    - dbus
+    - pipewire
+    - pipewire-pulse
+    - wireplumber
+
+rootfs:
+  packages:
+    # ─── Kernel ───
+    - linux-firmware
+
+    # ─── NVIDIA (DKMS for multi-kernel) ───
+    - nvidia-dkms
+    - nvidia-utils
+    - lib32-nvidia-utils
+    - nvidia-settings
+
+    # ─── Display ───
+    - lightdm
+    - lightdm-gtk-greeter
+    - xorg-server
+    - xorg-xinit
+    - xorg-xrandr
+    - xorg-setxkbmap
+    - xorg-xinput
+
+    # ─── Window Manager ───
+    - i3-wm
+    - i3status
+    - i3lock
+    - polybar
+    - rofi
+    - dmenu
+    - picom
+
+    # ─── Audio (PipeWire low-latency) ───
+    - pipewire
+    - pipewire-pulse
+    - pipewire-alsa
+    - pipewire-jack
+    - wireplumber
+    - alsa-utils
+    - volumeicon
+    - pavucontrol
+
+    # ─── Gaming Stack ───
+    - gamemode
+    - mangohud
+    - gamescope
+
+    # ─── Vulkan ───
+    - vulkan-tools
+    - vulkan-icd-loader
+
+    # ─── Utilities ───
+    - firefox
+    - alacritty
+    - thunar
+    - tumbler
+    - htop
+    - btop
+    - neofetch
+    - lxappearance
+    - gnome-keyring
+    - polkit-gnome
+    - udisks2
+
+    # ─── System Tools ───
+    - cpupower
+    - fwupd
+    - usbutils
+    - pciutils
+    - mesa-utils
+
+    # ─── Fonts ───
+    - ttf-dejavu
+    - ttf-liberation
+    - ttf-hack
+    - noto-fonts
+
+  packages-init:
+    runit:
+      - lightdm-runit
+      - connman-runit
+      - metalog-runit
+      - cpupower-runit
+
+livefs:
+  packages:
+    - amd-ucode
+    - artix-grub-live
+    - calamares
+    - calamares-extensions
+    - gparted
+    - mkinitcpio-nfs-utils
+    - squashfs-tools
+    - intel-ucode
+  packages-init:
+    runit:
+      - artix-live-runit
