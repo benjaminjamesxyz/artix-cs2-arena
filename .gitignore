@@ -6,6 +6,12 @@ AGENTS.md
 # Build output
 artix-cs2-arena-iso/output/
 
+# Secrets
+github
+github.pub
+*.pem
+*.key
+
 # OS files
 .DS_Store
 *.swp
