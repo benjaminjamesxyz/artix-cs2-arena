@@ -1,0 +1,9 @@
+# CPU frequency scaling configuration
+# Ryzen 7 5700G — 8C/16T
+
+# Governor: performance (locked for gaming)
+governor='performance'
+
+# Frequency options
+# min_freq and max_freq are auto-detected for this CPU
+# No need to set manually — 'performance' governor handles it

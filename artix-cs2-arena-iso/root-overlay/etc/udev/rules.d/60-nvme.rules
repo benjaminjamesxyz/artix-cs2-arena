@@ -1,0 +1,14 @@
+# NVMe SSD optimization for gaming
+# Samsung/WD NVMe drives work best with no I/O scheduler
+
+# Disable I/O scheduler (noop/none is fastest for NVMe)
+ACTION=="add|change", KERNEL=="nvme[0-9]*", ATTR{queue/scheduler}="none"
+
+# Increase request queue depth
+ACTION=="add|change", KERNEL=="nvme[0-9]*", ATTR{queue/nr_requests}="256"
+
+# Larger read-ahead for game asset loading
+ACTION=="add|change", KERNEL=="nvme[0-9]*", ATTR{queue/read_ahead_kb}="2048"
+
+# Rotational = 0 (already set by kernel for NVMe, but enforce)
+ACTION=="add|change", KERNEL=="nvme[0-9]*", ATTR{queue/rotational}="0"
